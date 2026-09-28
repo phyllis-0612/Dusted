@@ -846,10 +846,10 @@ function closePanel() {
 }
 
 function renderAll() {
-    renderHeader();
     renderTabs();
     renderToolbar();
     renderList();
+    renderHeader();
     renderBar();
 }
 
@@ -1067,9 +1067,12 @@ function setSheetVisible(visible) {
     const wrap = $d('.d-sheet-wrap');
     if (!wrap) return;
     wrap.hidden = !visible;
-    // hidden 的默认样式可能被美化覆盖。隐藏时也明确禁止接收点击。
+    // 酒馆的 html 有 transform/perspective，固定定位会以其 0 高度为基准。
+    // 弹层改为相对已铺满视口的 root 绝对定位，同时防止隐藏样式被美化覆盖。
     force(wrap, {
-        position: 'fixed', top: '0', left: '0', right: '0', bottom: '0',
+        position: 'absolute', top: '0', left: '0', right: '0', bottom: '0',
+        width: '100%', height: '100%', margin: '0', padding: '0',
+        'max-width': 'none', 'max-height': 'none',
         'z-index': '2147483001', display: visible ? 'flex' : 'none',
         'pointer-events': visible ? 'auto' : 'none',
         visibility: visible ? 'visible' : 'hidden', opacity: visible ? '1' : '0',

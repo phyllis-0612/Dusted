@@ -6,15 +6,19 @@ const pluginRoot = path.resolve(__dirname, '..');
 fs.mkdirSync(path.join(pluginRoot, 'work'), {recursive:true});
 const theme = `html body div:not(#chat):not(#sheld) > div[hidden] { display: block !important; opacity: 0 !important; }
 html body #dusted-root .d-sheet { position: absolute !important; top: -10000px !important; }`;
+// SillyTavern 1.19 sets transform on html and fixes body; html then has zero height.
+// Nested fixed overlays use that containing block rather than the viewport.
+const tavernLayout = `html { transform: translateZ(0); perspective: 1000px; }
+body { position: fixed; margin: 0; width: 100%; height: 100dvh; }`;
 const browserOptions = {headless:true};
 if (process.env.DUSTED_BROWSER_EXECUTABLE) browserOptions.executablePath = process.env.DUSTED_BROWSER_EXECUTABLE;
-async function setup(browser, source, hostile = false, mobile = false) {
+async function setup(browser, source, hostile = false, mobile = false, withTavernLayout = true) {
     const page = await browser.newPage({viewport:{width:mobile?390:1000,height:800},hasTouch:mobile,isMobile:mobile});
     const errors=[];
     page.on('pageerror', e=>errors.push(e.message));
-    await page.route('http://dusted.test/**', r=>r.fulfill({contentType:'text/html',body:'<!doctype html><html><body></body></html>'}));
+    await page.route('http://dusted.test/**', r=>r.fulfill({contentType:'text/html',body:'<!doctype html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"></head><body></body></html>'}));
     await page.goto('http://dusted.test');
-    await page.addStyleTag({content:fs.readFileSync(`${source}/style.css`,'utf8')+(hostile?theme:'')});
+    await page.addStyleTag({content:(withTavernLayout?tavernLayout:'')+fs.readFileSync(`${source}/style.css`,'utf8')+(hostile?theme:'')});
     await page.evaluate(() => {
         window.jQuery=()=>{};
         window.calls=[];
@@ -56,16 +60,24 @@ async function click(page, selector, mobile) {
     const browser=await chromium.launch(browserOptions);
     try {
         if (process.env.DUSTED_BASELINE) {
-        const original=await setup(browser,process.env.DUSTED_BASELINE,true);
+        const original=await setup(browser,process.env.DUSTED_BASELINE,true,false,false);
         assert.equal(await hitItem(original.page),false,'Original theme overlay must reproduce blocked item clicks');
         console.log('REPRODUCED: hidden overlay intercepts original item clicks under conflicting theme CSS');
         await original.page.close();
+        const oldLayout=await setup(browser,process.env.DUSTED_BASELINE);
+        await oldLayout.page.locator('.d-item').click();
+        assert.equal(await oldLayout.page.locator('.d-sheet-wrap').evaluate(el=>el.getBoundingClientRect().height),0);
+        assert.ok(await oldLayout.page.locator('.d-sheet').evaluate(el=>el.getBoundingClientRect().top<0));
+        console.log('REPRODUCED: SillyTavern transformed html collapses original fixed modal to zero height');
+        await oldLayout.page.close();
         }
         for(const mobile of [false,true]) {
             const {page,errors}=await setup(browser,pluginRoot,true,mobile);
             assert.equal(await hitItem(page),true);
             await click(page,'.d-item',mobile);
             await page.locator('.d-sheet-title').filter({hasText:'Test theme'}).waitFor();
+            assert.equal(await page.locator('.d-sheet-wrap').evaluate(el=>el.getBoundingClientRect().height),800);
+            assert.ok(await page.locator('.d-sheet').evaluate(el=>el.getBoundingClientRect().top>=0));
             await click(page,'.d-sheet [data-act="delete"]',mobile);
             await page.locator('.d-sheet [data-act="go"]').waitFor();
             assert.equal(await page.evaluate(()=>calls.filter(c=>c.url.endsWith('/delete')).length),0);
@@ -80,6 +92,7 @@ async function click(page, selector, mobile) {
             assert.equal(await page.evaluate(()=>calls.filter(c=>c.url.endsWith('/delete')).length),1);
             await click(page,'.d-sheet [data-act="done"]',mobile);
             assert.equal(await page.locator('.d-item').count(),0);
+            assert.match(await page.locator('.d-header .d-sub').innerText(), /主题 0/);
             assert.deepEqual(errors,[]);
             console.log(`PASS: ${mobile?'mobile touch':'desktop'} details, cancel, multiselect, confirmation, delete, verified refresh under theme overrides`);
             await page.close();

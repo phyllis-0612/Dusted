@@ -486,8 +486,10 @@ html body #dusted-root .d-grow { flex: 2; }
 /* ---------- 弹层 ---------- */
 
 html body #dusted-root .d-sheet-wrap {
-    position: fixed;
+    position: absolute;
     inset: 0;
+    width: 100%;
+    height: 100%;
     background: var(--d-scrim) !important;
     display: flex;
     align-items: flex-end;
