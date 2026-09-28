@@ -2,7 +2,7 @@
  * 所有颜色由插件自己管理，不跟随酒馆主题，保证文字和输入框永远看得清。
  */
 
-#dusted-root {
+html body #dusted-root {
     --d-bg: #16171b;
     --d-surface: #212228;
     --d-chip: #24252b;
@@ -30,12 +30,12 @@
     inset: 0;
     z-index: 30000;
     font-family: "Noto Sans SC", "PingFang SC", "HarmonyOS Sans SC", "MiSans", "Microsoft YaHei", sans-serif;
-    color: var(--d-text);
-    background: var(--d-bg);
+    color: var(--d-text) !important;
+    background: var(--d-bg) !important;
     -webkit-text-size-adjust: 100%;
 }
 
-#dusted-root[data-mode="day"] {
+html body #dusted-root[data-mode="day"] {
     --d-bg: #f6f3ee;
     --d-surface: #ffffff;
     --d-chip: #ebe7e0;
@@ -59,35 +59,35 @@
 
 /* ---------- 重置：挡住酒馆全局样式 ---------- */
 
-#dusted-root *,
-#dusted-root *::before,
-#dusted-root *::after {
+html body #dusted-root *,
+html body #dusted-root *::before,
+html body #dusted-root *::after {
     box-sizing: border-box;
     text-shadow: none;
     letter-spacing: normal;
 }
 
-#dusted-root button {
+html body #dusted-root button {
     all: unset;
     box-sizing: border-box;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
     font-family: inherit;
-    color: inherit;
+    color: inherit !important;
 }
 
-#dusted-root button:focus-visible,
-#dusted-root input:focus-visible {
+html body #dusted-root button:focus-visible,
+html body #dusted-root input:focus-visible {
     outline: 2px solid var(--d-accent);
     outline-offset: 2px;
 }
 
-#dusted-root button[disabled] {
+html body #dusted-root button[disabled] {
     opacity: 0.45;
     cursor: not-allowed;
 }
 
-#dusted-root input[type="search"] {
+html body #dusted-root input[type="search"] {
     all: unset;
     flex: 1;
     min-width: 0;
@@ -100,17 +100,17 @@
     caret-color: var(--d-accent);
 }
 
-#dusted-root input[type="search"]::placeholder {
+html body #dusted-root input[type="search"]::placeholder {
     color: var(--d-muted) !important;
     -webkit-text-fill-color: var(--d-muted) !important;
     opacity: 1;
 }
 
-#dusted-root input[type="search"]::-webkit-search-cancel-button {
+html body #dusted-root input[type="search"]::-webkit-search-cancel-button {
     -webkit-appearance: none;
 }
 
-#dusted-root svg {
+html body #dusted-root svg {
     width: 18px;
     height: 18px;
     flex-shrink: 0;
@@ -118,7 +118,7 @@
 
 /* ---------- 面板骨架 ---------- */
 
-#dusted-root .d-panel {
+html body #dusted-root .d-panel {
     height: 100%;
     max-width: 720px;
     margin: 0 auto;
@@ -127,7 +127,7 @@
     padding-top: env(safe-area-inset-top, 0px);
 }
 
-#dusted-root .d-header {
+html body #dusted-root .d-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -136,9 +136,9 @@
     min-height: 68px;
 }
 
-#dusted-root .d-titles { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+html body #dusted-root .d-titles { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 
-#dusted-root .d-title {
+html body #dusted-root .d-title {
     font-family: "Noto Serif SC", "Songti SC", "STSong", "SimSun", serif;
     font-size: 26px;
     font-weight: 700;
@@ -146,46 +146,46 @@
     line-height: 1.2;
 }
 
-#dusted-root .d-title-sm {
+html body #dusted-root .d-title-sm {
     font-family: "Noto Serif SC", "Songti SC", "STSong", serif;
     font-size: 19px;
     font-weight: 700;
 }
 
-#dusted-root .d-sub {
+html body #dusted-root .d-sub {
     display: block;
     font-size: 13px;
-    color: var(--d-muted);
+    color: var(--d-muted) !important;
     line-height: 1.5;
 }
 
-#dusted-root .d-head-btns { display: flex; gap: 8px; }
+html body #dusted-root .d-head-btns { display: flex; gap: 8px; }
 
-#dusted-root .d-iconbtn {
+html body #dusted-root .d-iconbtn {
     width: 44px;
     height: 44px;
     border-radius: 22px;
-    background: var(--d-chip);
-    color: var(--d-text);
+    background: var(--d-chip) !important;
+    color: var(--d-text) !important;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-#dusted-root .d-textbtn {
+html body #dusted-root .d-textbtn {
     min-height: 44px;
     padding: 0 4px;
     display: flex;
     align-items: center;
     font-size: 15px;
-    color: var(--d-text);
+    color: var(--d-text) !important;
 }
 
-#dusted-root .d-accent-text { color: var(--d-soft-text); }
+html body #dusted-root .d-accent-text { color: var(--d-soft-text) !important; }
 
 /* ---------- 分区标签 ---------- */
 
-#dusted-root .d-tabs {
+html body #dusted-root .d-tabs {
     display: flex;
     gap: 6px;
     padding: 6px 20px;
@@ -193,32 +193,32 @@
     scrollbar-width: none;
 }
 
-#dusted-root .d-tabs::-webkit-scrollbar { display: none; }
+html body #dusted-root .d-tabs::-webkit-scrollbar { display: none; }
 
-#dusted-root .d-tab {
+html body #dusted-root .d-tab {
     flex-shrink: 0;
     height: 36px;
     padding: 0 14px;
     border-radius: 18px;
-    border: 1px solid var(--d-border);
-    color: var(--d-text);
+    border: 1px solid var(--d-border) !important;
+    color: var(--d-text) !important;
     font-size: 14px;
     display: flex;
     align-items: center;
 }
 
-#dusted-root .d-tab.is-on {
-    background: var(--d-accent);
-    border-color: var(--d-accent);
-    color: var(--d-on-accent);
+html body #dusted-root .d-tab.is-on {
+    background: var(--d-accent) !important;
+    border-color: var(--d-accent) !important;
+    color: var(--d-on-accent) !important;
     font-weight: 700;
 }
 
 /* ---------- 搜索与筛选 ---------- */
 
-#dusted-root .d-toolbar { padding: 8px 20px 10px; display: flex; flex-direction: column; gap: 10px; }
+html body #dusted-root .d-toolbar { padding: 8px 20px 10px; display: flex; flex-direction: column; gap: 10px; }
 
-#dusted-root .d-search {
+html body #dusted-root .d-search {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -226,35 +226,35 @@
     padding: 0 14px;
     border-radius: 12px;
     background: var(--d-input-bg) !important;
-    border: 1px solid var(--d-input-border);
-    color: var(--d-muted);
+    border: 1px solid var(--d-input-border) !important;
+    color: var(--d-muted) !important;
 }
 
-#dusted-root .d-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+html body #dusted-root .d-chips { display: flex; gap: 8px; flex-wrap: wrap; }
 
-#dusted-root .d-chip {
+html body #dusted-root .d-chip {
     height: 32px;
     padding: 0 12px;
     border-radius: 16px;
-    border: 1px solid var(--d-border);
-    color: var(--d-text);
+    border: 1px solid var(--d-border) !important;
+    color: var(--d-text) !important;
     font-size: 13px;
     display: flex;
     align-items: center;
     gap: 6px;
 }
 
-#dusted-root .d-chip svg { width: 14px; height: 14px; }
+html body #dusted-root .d-chip svg { width: 14px; height: 14px; }
 
-#dusted-root .d-chip.is-on {
-    border-color: var(--d-accent);
-    background: var(--d-soft-bg);
-    color: var(--d-soft-text);
+html body #dusted-root .d-chip.is-on {
+    border-color: var(--d-accent) !important;
+    background: var(--d-soft-bg) !important;
+    color: var(--d-soft-text) !important;
 }
 
 /* ---------- 列表 ---------- */
 
-#dusted-root .d-list {
+html body #dusted-root .d-list {
     flex: 1;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
@@ -262,23 +262,23 @@
     overscroll-behavior: contain;
 }
 
-#dusted-root .d-grid {
+html body #dusted-root .d-grid {
     display: grid;
     gap: 14px 12px;
     align-content: start;
 }
 
-#dusted-root .d-grid-card { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-#dusted-root .d-grid-square { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-#dusted-root .d-grid-wide { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+html body #dusted-root .d-grid-card { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+html body #dusted-root .d-grid-square { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+html body #dusted-root .d-grid-wide { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 
 @media (min-width: 560px) {
-    #dusted-root .d-grid-card,
-    #dusted-root .d-grid-square { grid-template-columns: repeat(5, minmax(0, 1fr)); }
-    #dusted-root .d-grid-wide { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    html body #dusted-root .d-grid-card,
+    html body #dusted-root .d-grid-square { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+    html body #dusted-root .d-grid-wide { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
-#dusted-root .d-item {
+html body #dusted-root .d-item {
     display: flex;
     flex-direction: column;
     gap: 5px;
@@ -288,21 +288,21 @@
     -webkit-touch-callout: none;
 }
 
-#dusted-root .d-thumb {
+html body #dusted-root .d-thumb {
     position: relative;
     display: block;
     border-radius: 10px;
     overflow: hidden;
-    background: var(--d-thumb);
+    background: var(--d-thumb) !important;
     outline: 2px solid transparent;
     outline-offset: 2px;
 }
 
-#dusted-root .d-grid-card .d-thumb { aspect-ratio: 2 / 3; }
-#dusted-root .d-grid-square .d-thumb { aspect-ratio: 1 / 1; }
-#dusted-root .d-grid-wide .d-thumb { aspect-ratio: 16 / 10; }
+html body #dusted-root .d-grid-card .d-thumb { aspect-ratio: 2 / 3; }
+html body #dusted-root .d-grid-square .d-thumb { aspect-ratio: 1 / 1; }
+html body #dusted-root .d-grid-wide .d-thumb { aspect-ratio: 16 / 10; }
 
-#dusted-root .d-thumb img {
+html body #dusted-root .d-thumb img {
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -310,55 +310,55 @@
     pointer-events: none;
 }
 
-#dusted-root .d-badge {
+html body #dusted-root .d-badge {
     position: absolute;
     top: 6px;
     left: 6px;
     padding: 2px 6px;
     border-radius: 6px;
-    background: var(--d-accent);
-    color: var(--d-on-accent);
+    background: var(--d-accent) !important;
+    color: var(--d-on-accent) !important;
     font-size: 11px;
     font-weight: 700;
     line-height: 1.5;
 }
 
-#dusted-root .d-badge.is-use {
+html body #dusted-root .d-badge.is-use {
     top: auto;
     bottom: 6px;
-    background: var(--d-badge-bg);
-    color: var(--d-badge-text);
+    background: var(--d-badge-bg) !important;
+    color: var(--d-badge-text) !important;
     font-weight: 500;
 }
 
-#dusted-root .d-check {
+html body #dusted-root .d-check {
     position: absolute;
     top: 6px;
     right: 6px;
     width: 24px;
     height: 24px;
     border-radius: 12px;
-    border: 2px solid #ece8e1;
-    background: rgba(0, 0, 0, 0.28);
-    color: transparent;
+    border: 2px solid #ece8e1 !important;
+    background: rgba(0, 0, 0, 0.28) !important;
+    color: transparent !important;
     display: none;
     align-items: center;
     justify-content: center;
 }
 
-#dusted-root .d-check svg { width: 13px; height: 13px; }
+html body #dusted-root .d-check svg { width: 13px; height: 13px; }
 
-#dusted-root .is-selecting .d-check { display: flex; }
+html body #dusted-root .is-selecting .d-check { display: flex; }
 
-#dusted-root .d-item.is-picked .d-thumb { outline-color: var(--d-accent); }
+html body #dusted-root .d-item.is-picked .d-thumb { outline-color: var(--d-accent) !important; }
 
-#dusted-root .d-item.is-picked .d-check {
-    border-color: var(--d-accent);
-    background: var(--d-accent);
-    color: var(--d-on-accent);
+html body #dusted-root .d-item.is-picked .d-check {
+    border-color: var(--d-accent) !important;
+    background: var(--d-accent) !important;
+    color: var(--d-on-accent) !important;
 }
 
-#dusted-root .d-name {
+html body #dusted-root .d-name {
     font-size: 13px;
     font-weight: 500;
     white-space: nowrap;
@@ -366,9 +366,9 @@
     text-overflow: ellipsis;
 }
 
-#dusted-root .d-meta {
+html body #dusted-root .d-meta {
     font-size: 11px;
-    color: var(--d-muted);
+    color: var(--d-muted) !important;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -376,50 +376,50 @@
 
 /* 行列表（世界书、主题、预设） */
 
-#dusted-root .d-rows { display: flex; flex-direction: column; }
+html body #dusted-root .d-rows { display: flex; flex-direction: column; }
 
-#dusted-root .d-row {
+html body #dusted-root .d-row {
     flex-direction: row;
     align-items: center;
     gap: 12px;
     min-height: 64px;
-    border-bottom: 1px solid var(--d-line);
+    border-bottom: 1px solid var(--d-line) !important;
 }
 
-#dusted-root .d-row-icon {
+html body #dusted-root .d-row-icon {
     width: 36px;
     height: 36px;
     border-radius: 8px;
-    background: var(--d-chip);
-    color: var(--d-muted);
+    background: var(--d-chip) !important;
+    color: var(--d-muted) !important;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
 }
 
-#dusted-root .d-row-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
-#dusted-root .d-row-top { display: flex; align-items: center; gap: 6px; min-width: 0; }
-#dusted-root .d-row .d-name { font-size: 15px; }
-#dusted-root .d-row .d-meta { font-size: 12px; }
+html body #dusted-root .d-row-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+html body #dusted-root .d-row-top { display: flex; align-items: center; gap: 6px; min-width: 0; }
+html body #dusted-root .d-row .d-name { font-size: 15px; }
+html body #dusted-root .d-row .d-meta { font-size: 12px; }
 
-#dusted-root .d-tag {
+html body #dusted-root .d-tag {
     flex-shrink: 0;
     padding: 1px 6px;
     border-radius: 6px;
-    background: var(--d-soft-bg);
-    color: var(--d-soft-text);
+    background: var(--d-soft-bg) !important;
+    color: var(--d-soft-text) !important;
     font-size: 11px;
 }
 
-#dusted-root .d-tag.is-use { background: var(--d-chip); color: var(--d-text); }
+html body #dusted-root .d-tag.is-use { background: var(--d-chip) !important; color: var(--d-text) !important; }
 
-#dusted-root .d-box {
+html body #dusted-root .d-box {
     width: 22px;
     height: 22px;
     border-radius: 6px;
-    border: 2px solid var(--d-border);
-    color: transparent;
+    border: 2px solid var(--d-border) !important;
+    color: transparent !important;
     display: none;
     align-items: center;
     justify-content: center;
@@ -427,47 +427,47 @@
     margin-right: 4px;
 }
 
-#dusted-root .d-box svg { width: 13px; height: 13px; }
-#dusted-root .is-selecting .d-box { display: flex; }
+html body #dusted-root .d-box svg { width: 13px; height: 13px; }
+html body #dusted-root .is-selecting .d-box { display: flex; }
 
-#dusted-root .d-item.is-picked .d-box {
-    border-color: var(--d-accent);
-    background: var(--d-accent);
-    color: var(--d-on-accent);
+html body #dusted-root .d-item.is-picked .d-box {
+    border-color: var(--d-accent) !important;
+    background: var(--d-accent) !important;
+    color: var(--d-on-accent) !important;
 }
 
-#dusted-root .d-hint,
-#dusted-root .d-empty {
+html body #dusted-root .d-hint,
+html body #dusted-root .d-empty {
     grid-column: 1 / -1;
     text-align: center;
     font-size: 12px;
-    color: var(--d-faint);
+    color: var(--d-faint) !important;
     padding: 16px 0 4px;
 }
 
-#dusted-root .d-empty { font-size: 14px; padding-top: 60px; }
+html body #dusted-root .d-empty { font-size: 14px; padding-top: 60px; }
 
 /* ---------- 底部操作栏 ---------- */
 
-#dusted-root .d-bar {
+html body #dusted-root .d-bar {
     margin: 0 16px calc(16px + env(safe-area-inset-bottom, 0px));
     padding: 10px 10px 10px 18px;
     border-radius: 16px;
-    background: var(--d-surface);
-    border: 1px solid var(--d-line);
+    background: var(--d-surface) !important;
+    border: 1px solid var(--d-line) !important;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
 }
 
-#dusted-root .d-bar[hidden] { display: none; }
-#dusted-root .d-bar-count { font-size: 15px; font-weight: 700; }
-#dusted-root .d-bar-size { font-size: 12px; color: var(--d-muted); }
+html body #dusted-root .d-bar[hidden] { display: none; }
+html body #dusted-root .d-bar-count { font-size: 15px; font-weight: 700; }
+html body #dusted-root .d-bar-size { font-size: 12px; color: var(--d-muted) !important; }
 
 /* ---------- 按钮 ---------- */
 
-#dusted-root .d-btn {
+html body #dusted-root .d-btn {
     height: 48px;
     padding: 0 20px;
     border-radius: 14px;
@@ -478,31 +478,31 @@
     text-align: center;
 }
 
-#dusted-root .d-btn-danger { background: var(--d-danger); color: #ffffff; font-weight: 700; }
-#dusted-root .d-btn-accent { background: var(--d-accent); color: var(--d-on-accent); font-weight: 700; }
-#dusted-root .d-btn-ghost { border: 1px solid var(--d-border); color: var(--d-text); }
-#dusted-root .d-grow { flex: 2; }
+html body #dusted-root .d-btn-danger { background: var(--d-danger) !important; color: #ffffff !important; font-weight: 700; }
+html body #dusted-root .d-btn-accent { background: var(--d-accent) !important; color: var(--d-on-accent) !important; font-weight: 700; }
+html body #dusted-root .d-btn-ghost { border: 1px solid var(--d-border) !important; color: var(--d-text) !important; }
+html body #dusted-root .d-grow { flex: 2; }
 
 /* ---------- 弹层 ---------- */
 
-#dusted-root .d-sheet-wrap {
+html body #dusted-root .d-sheet-wrap {
     position: fixed;
     inset: 0;
-    background: var(--d-scrim);
+    background: var(--d-scrim) !important;
     display: flex;
     align-items: flex-end;
     justify-content: center;
 }
 
-#dusted-root .d-sheet-wrap[hidden] { display: none; }
+html body #dusted-root .d-sheet-wrap[hidden] { display: none; }
 
-#dusted-root .d-sheet {
+html body #dusted-root .d-sheet {
     width: 100%;
     max-width: 560px;
     max-height: 88vh;
     overflow-y: auto;
-    background: var(--d-sheet);
-    color: var(--d-text);
+    background: var(--d-sheet) !important;
+    color: var(--d-text) !important;
     border-radius: 24px 24px 0 0;
     padding: 12px 22px calc(26px + env(safe-area-inset-bottom, 0px));
     display: flex;
@@ -517,61 +517,61 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-    #dusted-root .d-sheet { animation: none; }
+    html body #dusted-root .d-sheet { animation: none; }
 }
 
-#dusted-root .d-grabber {
+html body #dusted-root .d-grabber {
     align-self: center;
     width: 40px;
     height: 4px;
     border-radius: 2px;
-    background: var(--d-border);
+    background: var(--d-border) !important;
 }
 
-#dusted-root .d-sheet-title {
+html body #dusted-root .d-sheet-title {
     font-family: "Noto Serif SC", "Songti SC", "STSong", serif;
     font-size: 20px;
     font-weight: 700;
     line-height: 1.4;
 }
 
-#dusted-root .d-detail-head { display: flex; gap: 14px; align-items: center; }
+html body #dusted-root .d-detail-head { display: flex; gap: 14px; align-items: center; }
 
-#dusted-root .d-detail-img {
+html body #dusted-root .d-detail-img {
     width: 64px;
     border-radius: 10px;
     object-fit: cover;
-    background: var(--d-thumb);
+    background: var(--d-thumb) !important;
     flex-shrink: 0;
 }
 
-#dusted-root .d-detail-chars { aspect-ratio: 2 / 3; }
-#dusted-root .d-detail-personas { aspect-ratio: 1 / 1; }
-#dusted-root .d-detail-bgs { width: 112px; aspect-ratio: 16 / 10; }
+html body #dusted-root .d-detail-chars { aspect-ratio: 2 / 3; }
+html body #dusted-root .d-detail-personas { aspect-ratio: 1 / 1; }
+html body #dusted-root .d-detail-bgs { width: 112px; aspect-ratio: 16 / 10; }
 
-#dusted-root .d-card {
-    background: var(--d-card);
+html body #dusted-root .d-card {
+    background: var(--d-card) !important;
     border-radius: 14px;
     padding: 4px 14px;
     display: flex;
     flex-direction: column;
 }
 
-#dusted-root .d-card-label { font-size: 12px; color: var(--d-muted); padding: 10px 0 4px; }
+html body #dusted-root .d-card-label { font-size: 12px; color: var(--d-muted) !important; padding: 10px 0 4px; }
 
-#dusted-root .d-line {
+html body #dusted-root .d-line {
     display: flex;
     align-items: center;
     gap: 10px;
     min-height: 42px;
-    border-top: 1px solid var(--d-line);
+    border-top: 1px solid var(--d-line) !important;
     padding: 6px 0;
 }
 
-#dusted-root .d-card-label + .d-line { border-top: 1px solid var(--d-line); }
-#dusted-root .d-card > .d-line:first-child { border-top: none; }
+html body #dusted-root .d-card-label + .d-line { border-top: 1px solid var(--d-line) !important; }
+html body #dusted-root .d-card > .d-line:first-child { border-top: none !important; }
 
-#dusted-root .d-dot {
+html body #dusted-root .d-dot {
     width: 20px;
     height: 20px;
     border-radius: 10px;
@@ -581,31 +581,31 @@
     flex-shrink: 0;
 }
 
-#dusted-root .d-dot svg { width: 11px; height: 11px; }
-#dusted-root .d-dot-del { background: var(--d-danger); color: #ffffff; }
-#dusted-root .d-dot-keep { background: var(--d-accent); color: var(--d-on-accent); }
+html body #dusted-root .d-dot svg { width: 11px; height: 11px; }
+html body #dusted-root .d-dot-del { background: var(--d-danger) !important; color: #ffffff !important; }
+html body #dusted-root .d-dot-keep { background: var(--d-accent) !important; color: var(--d-on-accent) !important; }
 
-#dusted-root .d-line-label { flex: 1; font-size: 14px; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-#dusted-root .d-line-label small { font-size: 12px; color: var(--d-soft-text); }
-#dusted-root .d-line-meta { font-size: 12px; color: var(--d-muted); flex-shrink: 0; }
-#dusted-root .d-line-meta.is-warn { color: var(--d-soft-text); }
+html body #dusted-root .d-line-label { flex: 1; font-size: 14px; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+html body #dusted-root .d-line-label small { font-size: 12px; color: var(--d-soft-text) !important; }
+html body #dusted-root .d-line-meta { font-size: 12px; color: var(--d-muted) !important; flex-shrink: 0; }
+html body #dusted-root .d-line-meta.is-warn { color: var(--d-soft-text) !important; }
 
-#dusted-root .d-kv {
+html body #dusted-root .d-kv {
     display: flex;
     justify-content: space-between;
     gap: 16px;
     padding: 12px 0;
-    border-top: 1px solid var(--d-line);
+    border-top: 1px solid var(--d-line) !important;
     font-size: 14px;
 }
 
-#dusted-root .d-kv:first-child { border-top: none; }
-#dusted-root .d-kv > span:first-child { color: var(--d-muted); flex-shrink: 0; }
-#dusted-root .d-kv-v { text-align: right; white-space: pre-line; word-break: break-all; }
+html body #dusted-root .d-kv:first-child { border-top: none !important; }
+html body #dusted-root .d-kv > span:first-child { color: var(--d-muted) !important; flex-shrink: 0; }
+html body #dusted-root .d-kv-v { text-align: right; white-space: pre-line; word-break: break-all; }
 
-#dusted-root .d-note { font-size: 13px; color: var(--d-muted); line-height: 1.6; }
+html body #dusted-root .d-note { font-size: 13px; color: var(--d-muted) !important; line-height: 1.6; }
 
-#dusted-root .d-switch-row {
+html body #dusted-root .d-switch-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -615,9 +615,9 @@
     cursor: pointer;
 }
 
-#dusted-root .d-switch-title { display: block; font-size: 15px; font-weight: 500; }
+html body #dusted-root .d-switch-title { display: block; font-size: 15px; font-weight: 500; }
 
-#dusted-root .d-switch-row input[type="checkbox"] {
+html body #dusted-root .d-switch-row input[type="checkbox"] {
     width: 22px;
     height: 22px;
     margin: 0;
@@ -625,15 +625,15 @@
     accent-color: var(--d-accent);
 }
 
-#dusted-root .d-actions { display: flex; gap: 10px; }
-#dusted-root .d-actions .d-btn { flex: 1; }
-#dusted-root .d-actions .d-grow { flex: 2; }
+html body #dusted-root .d-actions { display: flex; gap: 10px; }
+html body #dusted-root .d-actions .d-btn { flex: 1; }
+html body #dusted-root .d-actions .d-grow { flex: 2; }
 
-#dusted-root .d-progress { font-size: 14px; color: var(--d-muted); min-height: 22px; }
+html body #dusted-root .d-progress { font-size: 14px; color: var(--d-muted) !important; min-height: 22px; }
 
 /* ---------- 提示 ---------- */
 
-#dusted-root .d-toast {
+html body #dusted-root .d-toast {
     position: fixed;
     left: 50%;
     bottom: calc(96px + env(safe-area-inset-bottom, 0px));
@@ -641,8 +641,21 @@
     max-width: 86vw;
     padding: 10px 16px;
     border-radius: 12px;
-    background: var(--d-text);
-    color: var(--d-bg);
+    background: var(--d-text) !important;
+    color: var(--d-bg) !important;
     font-size: 13px;
     z-index: 2;
+}
+
+/* ---------- 防主题覆盖 ---------- */
+
+html body #dusted-root * {
+    color: inherit !important;
+    -webkit-text-fill-color: currentColor !important;
+    font-family: inherit;
+}
+
+html body #dusted-root .d-sheet-wrap[hidden],
+html body #dusted-root .d-bar[hidden] {
+    display: none !important;
 }

@@ -777,6 +777,30 @@ function toast(msg) {
     setTimeout(() => t.remove(), 2200);
 }
 
+
+/* 有些美化主题会用 !important 改掉所有 div 的定位和背景，这里用行内 !important 顶回去 */
+function force(el, props) {
+    if (!el) return;
+    for (const [k, v] of Object.entries(props)) el.style.setProperty(k, v, 'important');
+}
+
+function hardenLayout() {
+    force(root, {
+        position: 'fixed', top: '0', left: '0', right: '0', bottom: '0',
+        width: '100vw', height: '100vh', margin: '0', padding: '0',
+        'z-index': '2147483000', display: 'block', background: 'var(--d-bg)',
+        opacity: '1', visibility: 'visible', transform: 'none', filter: 'none',
+        'backdrop-filter': 'none', overflow: 'hidden', 'max-width': 'none', 'max-height': 'none',
+    });
+    root.style.setProperty('height', '100dvh', 'important');
+    force($d('.d-panel'), {
+        display: 'flex', 'flex-direction': 'column', height: '100%', width: '100%',
+        position: 'relative', background: 'var(--d-bg)', overflow: 'hidden',
+    });
+    force($d('.d-list'), { flex: '1 1 auto', 'min-height': '0', 'overflow-y': 'auto' });
+    force($d('.d-sheet-wrap'), { position: 'fixed', top: '0', left: '0', right: '0', bottom: '0', 'z-index': '2147483001' });
+}
+
 async function openPanel() {
     if (root) return;
     root = document.createElement('div');
@@ -791,6 +815,7 @@ async function openPanel() {
         </div>
         <div class="d-sheet-wrap" hidden><div class="d-sheet"></div></div>`;
     document.body.appendChild(root);
+    hardenLayout();
     applyMode();
     bindList();
     $d('.d-list').innerHTML = '<div class="d-empty">正在读取酒馆数据…</div>';
