@@ -4,8 +4,8 @@
 const DAY = 86400000;
 const IDLE_DAYS = 90;
 const ZIP_PART_LIMIT = 80 * 1024 * 1024;
-const WORLD_PREVIEW_PAGE = 6;
-const PREVIEW_TEXT_LIMIT = 180;
+const WORLD_PREVIEW_PAGE = 3;
+const PREVIEW_TEXT_LIMIT = 80;
 const LS_MODE = 'dusted-mode';
 const LS_BACKUP = 'dusted-backup';
 
@@ -1077,6 +1077,7 @@ function showSheet(html) {
     sheet.onclick = null;
     sheet.innerHTML = `<div class="d-grabber"></div>${html}`;
     setSheetVisible(true);
+    sheet.scrollTop = 0;
     wrap.onclick = (e) => { if (e.target === wrap && !S.busy) hideSheet(); };
     return sheet;
 }
@@ -1144,9 +1145,11 @@ function detailLines(it, tab = S.tab) {
 function previewText(value, emptyText) {
     const text = String(value ?? '');
     if (!text.trim()) return `<div class="d-note">${esc(emptyText)}</div>`;
-    const chars = Array.from(text);
-    const short = chars.length > PREVIEW_TEXT_LIMIT;
-    return `<div class="d-preview-content">${esc(short ? chars.slice(0, PREVIEW_TEXT_LIMIT).join('') + '…' : text)}</div>
+    const compact = text.replace(/\s+/g, ' ').trim();
+    const chars = Array.from(compact);
+    const truncated = chars.length > PREVIEW_TEXT_LIMIT;
+    const short = truncated || compact !== text;
+    return `<div class="d-preview-content">${esc(truncated ? chars.slice(0, PREVIEW_TEXT_LIMIT).join('') + '…' : compact)}</div>
         ${short ? `<details class="d-preview-more"><summary>展开全文</summary><div class="d-preview-content">${esc(text)}</div></details>` : ''}`;
 }
 
@@ -1220,14 +1223,14 @@ function openDetail(it) {
     const tab = S.tab;
     const thumb = it.thumb ? `<img class="d-detail-img d-detail-${tab}" src="${esc(it.thumb)}" alt="">` : '';
     const sheet = showSheet(`
+        <div class="d-actions d-detail-actions">
+            <button class="d-btn d-btn-ghost" data-act="close">关闭</button>
+            <button class="d-btn d-btn-danger" data-act="delete" ${it.locked ? 'disabled' : ''}>删除</button>
+        </div>
         <div class="d-detail-head">${thumb}<div><div class="d-sheet-title">${esc(it.name)}</div><div class="d-sub">${esc(it.meta)}</div></div></div>
         <div class="d-card">${detailLines(it, tab).map(([k, v]) => `<div class="d-kv"><span>${esc(k)}</span><span class="d-kv-v"${tab === 'worlds' && k === '条目' ? ' data-world-count' : ''}>${esc(v)}</span></div>`).join('')}</div>
         ${tab === 'personas' ? personaPreview(it.id) : tab === 'worlds' ? '<div class="d-detail-preview"></div>' : ''}
-        ${it.locked ? `<div class="d-note">${esc(it.locked)}</div>` : ''}
-        <div class="d-actions">
-            <button class="d-btn d-btn-ghost" data-act="close">关闭</button>
-            <button class="d-btn d-btn-danger" data-act="delete" ${it.locked ? 'disabled' : ''}>删除</button>
-        </div>`);
+        ${it.locked ? `<div class="d-note">${esc(it.locked)}</div>` : ''}`);
     sheet.onclick = (e) => {
         const act = e.target.closest('[data-act]')?.dataset.act;
         if (act === 'close') hideSheet();

@@ -615,6 +615,15 @@ html body #dusted-root .d-note { font-size: 13px; color: var(--d-muted) !importa
 
 /* ---------- 详情预览 ---------- */
 
+html body #dusted-root .d-detail-actions {
+    position: sticky;
+    top: -12px;
+    z-index: 2;
+    flex: 0 0 auto;
+    padding: 12px 0;
+    background: var(--d-sheet) !important;
+}
+
 html body #dusted-root .d-detail-head > div { min-width: 0; overflow-wrap: anywhere; }
 html body #dusted-root .d-detail-preview,
 html body #dusted-root .d-preview-card { min-width: 0; flex: 0 0 auto; }

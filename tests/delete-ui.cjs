@@ -63,6 +63,17 @@ async function hitItem(page) {
 async function click(page, selector, mobile) {
     if(mobile) await page.locator(selector).tap(); else await page.locator(selector).click();
 }
+async function assertDetailActionsReachable(page) {
+    for(const action of ['close','delete']) {
+        const hit=await page.locator(`.d-detail-actions [data-act="${action}"]`).evaluate(el=>{
+            const b=el.getBoundingClientRect();
+            const sheet=el.closest('.d-sheet').getBoundingClientRect();
+            return b.top>=sheet.top && b.bottom<=Math.min(sheet.bottom,innerHeight)
+                && el.contains(document.elementFromPoint(b.x+b.width/2,b.y+b.height/2));
+        });
+        assert.equal(hit,true,`${action} must remain onscreen and receive clicks without scrolling back`);
+    }
+}
 (async()=>{
     const browser=await chromium.launch(browserOptions);
     try {
@@ -151,6 +162,7 @@ async function click(page, selector, mobile) {
         for(const mobile of [false,true]) {
             const preview=await setup(browser,pluginRoot,true,mobile);
             const page=preview.page;
+            if(mobile) await page.setViewportSize({width:320,height:568});
             await page.evaluate(()=>{
                 pu.default_persona='test.png';
                 pu.persona_descriptions['test.png']={title:'旅行者',lorebook:'Test world',description:'<img src=x onerror="window.injected=true">\n'+'人设描述🌸'.repeat(90)+'全文结尾',connections:[
@@ -161,19 +173,24 @@ async function click(page, selector, mobile) {
                 testDusted.S.tab='personas';testDusted.renderAll();
             });
             await click(page,'.d-item',mobile);
+            await assertDetailActionsReachable(page);
             assert.match(await page.locator('.d-sheet').innerText(),/旅行者/);
             assert.match(await page.locator('.d-sheet').innerText(),/关联角色卡 · 2 张/);
             assert.match(await page.locator('.d-sheet').innerText(),/Test card/);
             assert.match(await page.locator('.d-sheet').innerText(),/找不到对应角色卡/);
             assert.match(await page.locator('.d-sheet').innerText(),/Test group/);
             assert.equal(await page.locator('.d-preview-content img').count(),0);
+            assert.ok(Array.from(await page.locator('.d-preview-card .d-preview-content').first().innerText()).length<=81);
             await click(page,'.d-preview-more summary',mobile);
             assert.match(await page.locator('.d-preview-more[open] .d-preview-content').innerText(),/全文结尾$/);
+            await page.locator('.d-sheet').evaluate(el=>{el.scrollTop=el.scrollHeight;});
+            await assertDetailActionsReachable(page);
             await click(page,'.d-sheet [data-act="close"]',mobile);
             await page.evaluate(()=>{
                 pu.persona_descriptions={};testDusted.renderAll();
             });
             await click(page,'.d-item',mobile);
+            assert.equal(await page.locator('.d-sheet').evaluate(el=>el.scrollTop),0);
             assert.match(await page.locator('.d-sheet').innerText(),/还没有填写人设描述/);
             assert.match(await page.locator('.d-sheet').innerText(),/没有关联角色卡/);
             await click(page,'.d-sheet [data-act="close"]',mobile);
@@ -184,7 +201,8 @@ async function click(page, selector, mobile) {
             await click(page,'.d-item',mobile);
             await page.locator('.d-preview-entry').first().waitFor();
             assert.equal(await page.locator('[data-world-count]').innerText(),'8 条');
-            assert.equal(await page.locator('.d-preview-entry').count(),6);
+            assert.equal(await page.locator('.d-preview-entry').count(),3);
+            await assertDetailActionsReachable(page);
             assert.equal(await page.locator('.d-preview-entry .d-preview-title').first().innerText(),'条目 7');
             assert.match(await page.locator('.d-detail-preview').innerText(),/常驻/);
             assert.match(await page.locator('.d-detail-preview').innerText(),/已禁用/);
@@ -192,12 +210,18 @@ async function click(page, selector, mobile) {
             assert.equal(await page.locator('.d-detail-preview script').count(),0);
             await click(page,'.d-preview-more summary',mobile);
             assert.match(await page.locator('.d-preview-more[open] .d-preview-content').innerText(),/世界书全文结尾$/);
-            // Collapse again, then scroll to the pagination and action buttons.
+            await page.locator('.d-sheet').evaluate(el=>{el.scrollTop=el.scrollHeight;});
+            await assertDetailActionsReachable(page);
+            // Collapse again, then load the remaining batches.
             await click(page,'.d-preview-more summary',mobile);
+            await click(page,'[data-act="preview-more"]',mobile);
+            assert.equal(await page.locator('.d-preview-entry').count(),6);
             await click(page,'[data-act="preview-more"]',mobile);
             assert.equal(await page.locator('.d-preview-entry').count(),8);
             assert.equal(await page.locator('[data-act="preview-more"]').count(),0);
             assert.equal(await page.locator('.d-sheet').evaluate(el=>el.scrollWidth<=el.clientWidth),true);
+            await page.locator('.d-sheet').evaluate(el=>{el.scrollTop=el.scrollHeight;});
+            await assertDetailActionsReachable(page);
             await click(page,'.d-sheet [data-act="delete"]',mobile);
             await page.locator('.d-sheet [data-act="go"]').waitFor();
             assert.equal(await page.locator('.d-detail-preview').count(),0);
@@ -205,7 +229,7 @@ async function click(page, selector, mobile) {
             assert.equal(await page.evaluate(()=>window.injected),undefined);
             assert.equal(await page.evaluate(()=>calls.filter(c=>c.url.endsWith('/delete')).length),0);
             assert.deepEqual(preview.errors,[]);
-            console.log(`PASS: ${mobile?'mobile touch':'desktop'} persona links, safe long-text expansion, world pagination and confirmation after preview`);
+            console.log(`PASS: ${mobile?'small mobile touch':'desktop'} compact previews, sticky actions after long-text expansion and pagination, and confirmation after preview`);
             await page.close();
         }
         const asyncPreview=await setup(browser,pluginRoot);
