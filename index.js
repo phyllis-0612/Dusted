@@ -798,6 +798,11 @@ function hardenLayout() {
         position: 'relative', background: 'var(--d-bg)', overflow: 'hidden',
     });
     force($d('.d-list'), { flex: '1 1 auto', 'min-height': '0', 'overflow-y': 'auto' });
+    for (const sel of ['.d-header', '.d-toolbar', '.d-bar']) force($d(sel), { flex: '0 0 auto' });
+    force($d('.d-tabs'), {
+        flex: '0 0 auto', height: '52px', 'min-height': '52px', display: 'flex',
+        'align-items': 'center', 'overflow-x': 'auto', 'overflow-y': 'hidden',
+    });
     force($d('.d-sheet-wrap'), { position: 'fixed', top: '0', left: '0', right: '0', bottom: '0', 'z-index': '2147483001' });
 }
 
@@ -894,7 +899,7 @@ function onHeaderClick(e) {
 function renderTabs() {
     const t = $d('.d-tabs');
     t.innerHTML = TABS.map(([id, label]) =>
-        `<button class="d-tab${S.tab === id ? ' is-on' : ''}" role="tab" aria-selected="${S.tab === id}" data-tab="${id}">${label}</button>`).join('');
+        `<button class="d-tab${S.tab === id ? ' is-on' : ''}" style="flex:0 0 auto !important;height:36px !important;white-space:nowrap !important" role="tab" aria-selected="${S.tab === id}" data-tab="${id}">${label}</button>`).join('');
     t.onclick = (e) => {
         const id = e.target.closest('[data-tab]')?.dataset.tab;
         if (!id || id === S.tab) return;

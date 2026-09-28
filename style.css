@@ -659,3 +659,22 @@ html body #dusted-root .d-sheet-wrap[hidden],
 html body #dusted-root .d-bar[hidden] {
     display: none !important;
 }
+
+/* 头部、标签、搜索栏、底栏不被列表挤压 */
+html body #dusted-root .d-header,
+html body #dusted-root .d-tabs,
+html body #dusted-root .d-toolbar,
+html body #dusted-root .d-bar {
+    flex: 0 0 auto !important;
+}
+
+html body #dusted-root .d-tabs {
+    min-height: 48px !important;
+    align-items: center !important;
+}
+
+html body #dusted-root .d-tab {
+    flex: 0 0 auto !important;
+    white-space: nowrap !important;
+    line-height: 1 !important;
+}
