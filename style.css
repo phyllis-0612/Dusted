@@ -492,9 +492,15 @@ html body #dusted-root .d-sheet-wrap {
     display: flex;
     align-items: flex-end;
     justify-content: center;
+    z-index: 2147483001;
+    pointer-events: auto;
 }
 
-html body #dusted-root .d-sheet-wrap[hidden] { display: none; }
+html body #dusted-root .d-sheet-wrap[hidden] {
+    display: none !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
+}
 
 html body #dusted-root .d-sheet {
     width: 100%;
@@ -644,7 +650,8 @@ html body #dusted-root .d-toast {
     background: var(--d-text) !important;
     color: var(--d-bg) !important;
     font-size: 13px;
-    z-index: 2;
+    z-index: 2147483002;
+    pointer-events: none;
 }
 
 /* ---------- 防主题覆盖 ---------- */

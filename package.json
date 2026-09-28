@@ -1,0 +1,11 @@
+{
+  "name": "dusted",
+  "version": "0.1.2",
+  "private": true,
+  "scripts": {
+    "test": "node tests/delete-ui.cjs"
+  },
+  "devDependencies": {
+    "playwright": "1.62.1"
+  }
+}

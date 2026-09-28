@@ -774,6 +774,7 @@ function toast(msg) {
     t.className = 'd-toast';
     t.textContent = msg;
     root.appendChild(t);
+    force(t, { 'z-index': '2147483002', 'pointer-events': 'none' });
     setTimeout(() => t.remove(), 2200);
 }
 
@@ -795,7 +796,7 @@ function hardenLayout() {
     root.style.setProperty('height', '100dvh', 'important');
     force($d('.d-panel'), {
         display: 'flex', 'flex-direction': 'column', height: '100%', width: '100%',
-        position: 'relative', background: 'var(--d-bg)', overflow: 'hidden',
+        position: 'relative', 'z-index': '0', background: 'var(--d-bg)', overflow: 'hidden',
     });
     force($d('.d-list'), { flex: '1 1 auto', 'min-height': '0', 'overflow-y': 'auto' });
     for (const sel of ['.d-header', '.d-toolbar', '.d-bar']) force($d(sel), { flex: '0 0 auto' });
@@ -803,7 +804,7 @@ function hardenLayout() {
         flex: '0 0 auto', height: '52px', 'min-height': '52px', display: 'flex',
         'align-items': 'center', 'overflow-x': 'auto', 'overflow-y': 'hidden',
     });
-    force($d('.d-sheet-wrap'), { position: 'fixed', top: '0', left: '0', right: '0', bottom: '0', 'z-index': '2147483001' });
+    setSheetVisible(false);
 }
 
 async function openPanel() {
@@ -1048,15 +1049,40 @@ function bindList() {
 function showSheet(html) {
     const wrap = $d('.d-sheet-wrap');
     const sheet = $d('.d-sheet');
+    // 清掉上一页的动作，避免清点或执行期间再次触发旧的删除按钮。
+    sheet.onclick = null;
     sheet.innerHTML = `<div class="d-grabber"></div>${html}`;
-    wrap.hidden = false;
+    setSheetVisible(true);
     wrap.onclick = (e) => { if (e.target === wrap && !S.busy) hideSheet(); };
     return sheet;
 }
 
 function hideSheet() {
+    setSheetVisible(false);
+    const sheet = $d('.d-sheet');
+    if (sheet) sheet.onclick = null;
+}
+
+function setSheetVisible(visible) {
     const wrap = $d('.d-sheet-wrap');
-    if (wrap) wrap.hidden = true;
+    if (!wrap) return;
+    wrap.hidden = !visible;
+    // hidden 的默认样式可能被美化覆盖。隐藏时也明确禁止接收点击。
+    force(wrap, {
+        position: 'fixed', top: '0', left: '0', right: '0', bottom: '0',
+        'z-index': '2147483001', display: visible ? 'flex' : 'none',
+        'pointer-events': visible ? 'auto' : 'none',
+        visibility: visible ? 'visible' : 'hidden', opacity: visible ? '1' : '0',
+        'align-items': 'flex-end', 'justify-content': 'center',
+        transform: 'none', filter: 'none',
+    });
+    force($d('.d-sheet'), {
+        position: 'relative', top: 'auto', left: 'auto', right: 'auto', bottom: 'auto',
+        display: 'flex', 'flex-direction': 'column', 'pointer-events': 'auto',
+        visibility: 'visible', opacity: '1', transform: 'none',
+        width: '100%', 'max-width': '560px', height: 'auto',
+        'max-height': '88dvh', 'overflow-y': 'auto', 'z-index': '0',
+    });
 }
 
 function detailLines(it) {
@@ -1099,6 +1125,7 @@ function openDetail(it) {
 }
 
 async function openConfirm(ids) {
+    if (S.busy) return;
     if (S.tab === 'chars' && S.scanning) {
         toast('还在清点引用，稍等几秒');
         return;
@@ -1146,6 +1173,7 @@ async function openConfirm(ids) {
 }
 
 async function execute(plan, withBackup) {
+    if (S.busy) return;
     S.busy = true;
     const sheet = showSheet('<div class="d-sheet-title">正在处理</div><div class="d-progress"></div>');
     const prog = sheet.querySelector('.d-progress');
