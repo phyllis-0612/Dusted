@@ -1,0 +1,11 @@
+{
+    "display_name": "拂尘 · Dusted",
+    "loading_order": 100,
+    "requires": [],
+    "optional": [],
+    "js": "index.js",
+    "css": "style.css",
+    "author": "鱼仔",
+    "version": "0.1.0",
+    "homePage": ""
+}
