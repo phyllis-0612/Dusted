@@ -1,6 +1,6 @@
 {
   "name": "dusted",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "private": true,
   "scripts": {
     "test": "node tests/delete-ui.cjs"

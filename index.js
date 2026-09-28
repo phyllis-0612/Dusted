@@ -4,6 +4,8 @@
 const DAY = 86400000;
 const IDLE_DAYS = 90;
 const ZIP_PART_LIMIT = 80 * 1024 * 1024;
+const WORLD_PREVIEW_PAGE = 6;
+const PREVIEW_TEXT_LIMIT = 180;
 const LS_MODE = 'dusted-mode';
 const LS_BACKUP = 'dusted-backup';
 
@@ -163,6 +165,7 @@ const S = {
     presets: [],
     full: new Map(),
     worldCounts: new Map(),
+    worldLoads: new Map(),
     scanning: false,
     scanDone: 0,
     scanTotal: 0,
@@ -238,10 +241,31 @@ async function scanCharacters() {
 async function scanWorldCounts() {
     const todo = S.worldNames.filter((n) => !S.worldCounts.has(n));
     await pool(todo, 4, async (name) => {
-        const data = await getJSON('/api/worldinfo/get', { name });
-        S.worldCounts.set(name, Object.keys(data?.entries || {}).length);
+        await readWorldEntries(name);
     });
     if (S.tab === 'worlds') renderList();
+}
+
+async function readWorldEntries(name) {
+    let request = S.worldLoads.get(name);
+    if (!request) {
+        request = getJSON('/api/worldinfo/get', { name });
+        S.worldLoads.set(name, request);
+    }
+    try {
+        const data = await request;
+        const entries = Object.entries(data?.entries || {})
+            .filter(([, entry]) => entry && typeof entry === 'object')
+            .map(([id, entry], index) => ({ id, entry, index }))
+            .sort((a, b) => {
+                const order = (item) => Number.isFinite(item.entry.displayIndex) ? item.entry.displayIndex : item.index;
+                return order(a) - order(b) || a.index - b.index;
+            });
+        S.worldCounts.set(name, entries.length);
+        return entries;
+    } finally {
+        if (S.worldLoads.get(name) === request) S.worldLoads.delete(name);
+    }
 }
 
 function worldRefs(excludeAvatars = new Set()) {
@@ -1088,9 +1112,9 @@ function setSheetVisible(visible) {
     });
 }
 
-function detailLines(it) {
+function detailLines(it, tab = S.tab) {
     const lines = [];
-    if (S.tab === 'chars') {
+    if (tab === 'chars') {
         const f = S.full.get(it.id);
         const lore = charLoreFor(it.id);
         if (!f) lines.push(['引用', '还在清点中']);
@@ -1102,19 +1126,103 @@ function detailLines(it) {
         const groups = (C().groups || []).filter((g) => g.members?.includes(it.id)).map((g) => g.name);
         if (groups.length) lines.push(['所在群聊', groups.join('、')]);
     }
-    if (S.tab === 'worlds') {
+    if (tab === 'worlds') {
         lines.push(['条目', S.worldCounts.has(it.id) ? `${S.worldCounts.get(it.id)} 条` : '统计中']);
         lines.push(['被谁使用', it.refs?.length ? it.refs.join('\n') : '没有']);
+    }
+    if (tab === 'personas') {
+        const pu = powerUser();
+        const descriptor = pu.persona_descriptions?.[it.id] || {};
+        if (descriptor.title) lines.push(['人设称号', descriptor.title]);
+        lines.push(['默认人设', pu.default_persona === it.id ? '是' : '否']);
+        lines.push(['绑定世界书', descriptor.lorebook || '无']);
     }
     if (!lines.length) lines.push(['信息', it.meta]);
     return lines;
 }
 
+function previewText(value, emptyText) {
+    const text = String(value ?? '');
+    if (!text.trim()) return `<div class="d-note">${esc(emptyText)}</div>`;
+    const chars = Array.from(text);
+    const short = chars.length > PREVIEW_TEXT_LIMIT;
+    return `<div class="d-preview-content">${esc(short ? chars.slice(0, PREVIEW_TEXT_LIMIT).join('') + '…' : text)}</div>
+        ${short ? `<details class="d-preview-more"><summary>展开全文</summary><div class="d-preview-content">${esc(text)}</div></details>` : ''}`;
+}
+
+function personaPreview(avatar) {
+    const descriptor = powerUser().persona_descriptions?.[avatar] || {};
+    const ctx = C();
+    const connections = Array.isArray(descriptor.connections) ? descriptor.connections : [];
+    const seen = new Set();
+    const cards = [], groups = [];
+    for (const connection of connections) {
+        if (connection?.id == null || connection.id === '' || !['character', 'group'].includes(connection.type)) continue;
+        const key = `${connection.type}::${connection.id}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        if (connection.type === 'character') {
+            const card = ctx.characters.find((c) => c.avatar === connection.id);
+            cards.push(`<div class="d-preview-link">
+                ${card ? `<img src="/thumbnail?type=avatar&file=${encodeURIComponent(card.avatar)}" alt="" loading="lazy">` : ''}
+                <div><div class="d-preview-title">${esc(card?.name || connection.id)}</div><div class="d-note">${esc(card ? card.avatar : '找不到对应角色卡，关联记录仍存在')}</div></div>
+            </div>`);
+        } else {
+            const group = (ctx.groups || []).find((g) => String(g.id) === String(connection.id));
+            groups.push(`<div class="d-preview-link"><div><div class="d-preview-title">${esc(group?.name || connection.id)}</div><div class="d-note">${group ? '关联群聊' : '找不到对应群聊，关联记录仍存在'}</div></div></div>`);
+        }
+    }
+    return `<div class="d-card d-preview-card"><div class="d-card-label">人设描述</div>${previewText(descriptor.description, '还没有填写人设描述')}</div>
+        <div class="d-card d-preview-card"><div class="d-card-label">关联角色卡 · ${cards.length} 张</div>${cards.length ? cards.join('') : '<div class="d-note">没有关联角色卡</div>'}</div>
+        ${groups.length ? `<div class="d-card d-preview-card"><div class="d-card-label">关联群聊 · ${groups.length} 个</div>${groups.join('')}</div>` : ''}`;
+}
+
+function worldPreview(entries, shown) {
+    const visible = entries.slice(0, shown);
+    return `<div class="d-card d-preview-card"><div class="d-card-label">条目预览 · ${entries.length} 条${entries.length > shown ? ` · 已显示 ${visible.length} 条` : ''}</div>
+        ${visible.length ? visible.map(({ id, entry }) => {
+            const keywords = Array.isArray(entry.key) ? entry.key.join('、') : String(entry.key || '');
+            const secondary = Array.isArray(entry.keysecondary) ? entry.keysecondary.join('、') : String(entry.keysecondary || '');
+            const title = entry.comment || keywords || `条目 ${entry.uid ?? id}`;
+            return `<div class="d-preview-entry"><div class="d-preview-entry-head"><span class="d-preview-title">${esc(title)}</span>
+                ${entry.disable ? '<span class="d-tag">已禁用</span>' : entry.constant ? '<span class="d-tag">常驻</span>' : ''}</div>
+                <div class="d-note">关键词：${esc(keywords || '无')}${secondary ? `<br>次关键词：${esc(secondary)}` : ''}</div>
+                ${previewText(entry.content, '这条还没有内容')}</div>`;
+        }).join('') : '<div class="d-note">这本世界书没有条目</div>'}
+        ${entries.length > shown ? `<button class="d-textbtn d-preview-next" data-act="preview-more">再看 ${Math.min(WORLD_PREVIEW_PAGE, entries.length - shown)} 条</button>` : ''}</div>`;
+}
+
+function loadWorldPreview(name, preview, sheet) {
+    let entries = [], shown = WORLD_PREVIEW_PAGE;
+    const active = () => preview.isConnected && root?.contains(preview) && !$d('.d-sheet-wrap')?.hidden;
+    const render = () => { if (active()) preview.innerHTML = worldPreview(entries, shown); };
+    const load = async () => {
+        preview.innerHTML = '<div class="d-note" role="status">正在读取世界书条目…</div>';
+        try {
+            entries = await readWorldEntries(name);
+            if (!active()) return;
+            const count = sheet.querySelector('[data-world-count]');
+            if (count) count.textContent = `${entries.length} 条`;
+            render();
+        } catch (error) {
+            if (active()) preview.innerHTML = `<div class="d-note">条目读取失败：${esc(error.message)}</div><button class="d-textbtn" data-act="preview-retry">重试</button>`;
+        }
+    };
+    preview.onclick = (e) => {
+        const action = e.target.closest('[data-act]')?.dataset.act;
+        if (action === 'preview-more') { shown += WORLD_PREVIEW_PAGE; render(); }
+        if (action === 'preview-retry') load();
+    };
+    load();
+}
+
 function openDetail(it) {
-    const thumb = it.thumb ? `<img class="d-detail-img d-detail-${S.tab}" src="${esc(it.thumb)}" alt="">` : '';
+    const tab = S.tab;
+    const thumb = it.thumb ? `<img class="d-detail-img d-detail-${tab}" src="${esc(it.thumb)}" alt="">` : '';
     const sheet = showSheet(`
         <div class="d-detail-head">${thumb}<div><div class="d-sheet-title">${esc(it.name)}</div><div class="d-sub">${esc(it.meta)}</div></div></div>
-        <div class="d-card">${detailLines(it).map(([k, v]) => `<div class="d-kv"><span>${esc(k)}</span><span class="d-kv-v">${esc(v)}</span></div>`).join('')}</div>
+        <div class="d-card">${detailLines(it, tab).map(([k, v]) => `<div class="d-kv"><span>${esc(k)}</span><span class="d-kv-v"${tab === 'worlds' && k === '条目' ? ' data-world-count' : ''}>${esc(v)}</span></div>`).join('')}</div>
+        ${tab === 'personas' ? personaPreview(it.id) : tab === 'worlds' ? '<div class="d-detail-preview"></div>' : ''}
         ${it.locked ? `<div class="d-note">${esc(it.locked)}</div>` : ''}
         <div class="d-actions">
             <button class="d-btn d-btn-ghost" data-act="close">关闭</button>
@@ -1125,6 +1233,7 @@ function openDetail(it) {
         if (act === 'close') hideSheet();
         if (act === 'delete' && !it.locked) openConfirm([it.id]);
     };
+    if (tab === 'worlds') loadWorldPreview(it.id, sheet.querySelector('.d-detail-preview'), sheet);
 }
 
 async function openConfirm(ids) {

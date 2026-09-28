@@ -24,10 +24,17 @@ async function setup(browser, source, hostile = false, mobile = false, withTaver
         window.calls=[];
         window.data={chars:[{avatar:'test.png',name:'Test card',data:{extensions:{}}}],worlds:['Test world'],avatars:['test.png'],bgs:['test.jpg'],themes:[{name:'Test theme'}],presets:['Test preset']};
         window.pu={personas:{'test.png':'Test persona'},persona_descriptions:{}};
-        window.SillyTavern={getContext:()=>({characters:data.chars,powerUserSettings:pu,groups:[],extensionSettings:{},saveSettingsDebounced:()=>{},getRequestHeaders:()=>({'Content-Type':'application/json'})})};
+        window.groups=[];
+        window.worldEntries={};
+        window.SillyTavern={getContext:()=>({characters:data.chars,powerUserSettings:pu,groups:window.groups,extensionSettings:{},saveSettingsDebounced:()=>{},getRequestHeaders:()=>({'Content-Type':'application/json'})})};
         window.fetch=async (url,options={})=>{
             const body=JSON.parse(options.body||'{}');
             calls.push({url,method:options.method,body});
+            if(url==='/api/worldinfo/get') {
+                if(window.worldDelay) await new Promise(resolve=>setTimeout(resolve,window.worldDelay));
+                if(window.failWorld) return {ok:false,status:500};
+                return {ok:true,status:200,json:async()=>({entries:window.worldEntries})};
+            }
             if(url.endsWith('/delete')) {
                 await new Promise(resolve=>setTimeout(resolve,100));
                 if(window.failDelete) return {ok:false,status:500};
@@ -141,5 +148,88 @@ async function click(page, selector, mobile) {
         assert.deepEqual(guard.errors,[]);
         console.log('PASS: repeated confirmation starts only one deletion task');
         await guard.page.close();
+        for(const mobile of [false,true]) {
+            const preview=await setup(browser,pluginRoot,true,mobile);
+            const page=preview.page;
+            await page.evaluate(()=>{
+                pu.default_persona='test.png';
+                pu.persona_descriptions['test.png']={title:'旅行者',lorebook:'Test world',description:'<img src=x onerror="window.injected=true">\n'+'人设描述🌸'.repeat(90)+'全文结尾',connections:[
+                    {type:'character',id:'test.png'},{type:'character',id:'test.png'},
+                    {type:'character',id:'missing.png'},{type:'group',id:'42'},
+                ]};
+                window.groups=[{id:42,name:'Test group'}];
+                testDusted.S.tab='personas';testDusted.renderAll();
+            });
+            await click(page,'.d-item',mobile);
+            assert.match(await page.locator('.d-sheet').innerText(),/旅行者/);
+            assert.match(await page.locator('.d-sheet').innerText(),/关联角色卡 · 2 张/);
+            assert.match(await page.locator('.d-sheet').innerText(),/Test card/);
+            assert.match(await page.locator('.d-sheet').innerText(),/找不到对应角色卡/);
+            assert.match(await page.locator('.d-sheet').innerText(),/Test group/);
+            assert.equal(await page.locator('.d-preview-content img').count(),0);
+            await click(page,'.d-preview-more summary',mobile);
+            assert.match(await page.locator('.d-preview-more[open] .d-preview-content').innerText(),/全文结尾$/);
+            await click(page,'.d-sheet [data-act="close"]',mobile);
+            await page.evaluate(()=>{
+                pu.persona_descriptions={};testDusted.renderAll();
+            });
+            await click(page,'.d-item',mobile);
+            assert.match(await page.locator('.d-sheet').innerText(),/还没有填写人设描述/);
+            assert.match(await page.locator('.d-sheet').innerText(),/没有关联角色卡/);
+            await click(page,'.d-sheet [data-act="close"]',mobile);
+            await page.evaluate(()=>{
+                worldEntries=Object.fromEntries(Array.from({length:8},(_,i)=>[i,{uid:i,displayIndex:7-i,comment:`条目 ${i}`,key:['关键字',String(i)],keysecondary:['次关键词'],content:i===7?'<script>window.injected=true</script>'+ '长内容🌸'.repeat(100)+'世界书全文结尾':`内容 ${i}`,disable:i===6,constant:i===7}]));
+                testDusted.S.tab='worlds';testDusted.renderAll();
+            });
+            await click(page,'.d-item',mobile);
+            await page.locator('.d-preview-entry').first().waitFor();
+            assert.equal(await page.locator('[data-world-count]').innerText(),'8 条');
+            assert.equal(await page.locator('.d-preview-entry').count(),6);
+            assert.equal(await page.locator('.d-preview-entry .d-preview-title').first().innerText(),'条目 7');
+            assert.match(await page.locator('.d-detail-preview').innerText(),/常驻/);
+            assert.match(await page.locator('.d-detail-preview').innerText(),/已禁用/);
+            assert.match(await page.locator('.d-detail-preview').innerText(),/次关键词/);
+            assert.equal(await page.locator('.d-detail-preview script').count(),0);
+            await click(page,'.d-preview-more summary',mobile);
+            assert.match(await page.locator('.d-preview-more[open] .d-preview-content').innerText(),/世界书全文结尾$/);
+            // Collapse again, then scroll to the pagination and action buttons.
+            await click(page,'.d-preview-more summary',mobile);
+            await click(page,'[data-act="preview-more"]',mobile);
+            assert.equal(await page.locator('.d-preview-entry').count(),8);
+            assert.equal(await page.locator('[data-act="preview-more"]').count(),0);
+            assert.equal(await page.locator('.d-sheet').evaluate(el=>el.scrollWidth<=el.clientWidth),true);
+            await click(page,'.d-sheet [data-act="delete"]',mobile);
+            await page.locator('.d-sheet [data-act="go"]').waitFor();
+            assert.equal(await page.locator('.d-detail-preview').count(),0);
+            await click(page,'.d-sheet [data-act="close"]',mobile);
+            assert.equal(await page.evaluate(()=>window.injected),undefined);
+            assert.equal(await page.evaluate(()=>calls.filter(c=>c.url.endsWith('/delete')).length),0);
+            assert.deepEqual(preview.errors,[]);
+            console.log(`PASS: ${mobile?'mobile touch':'desktop'} persona links, safe long-text expansion, world pagination and confirmation after preview`);
+            await page.close();
+        }
+        const asyncPreview=await setup(browser,pluginRoot);
+        await asyncPreview.page.evaluate(()=>{testDusted.S.tab='worlds';testDusted.renderAll();window.failWorld=true;});
+        await asyncPreview.page.locator('.d-item').click();
+        await asyncPreview.page.locator('[data-act="preview-retry"]').waitFor();
+        await asyncPreview.page.evaluate(()=>{window.failWorld=false;});
+        await asyncPreview.page.locator('[data-act="preview-retry"]').click();
+        await asyncPreview.page.getByText('这本世界书没有条目').waitFor();
+        await asyncPreview.page.locator('.d-sheet [data-act="close"]').click();
+        await asyncPreview.page.evaluate(()=>{window.worldDelay=200;worldEntries={0:{comment:'迟到的预览',content:'迟到的内容'}};});
+        await asyncPreview.page.locator('.d-item').click();
+        await asyncPreview.page.locator('.d-sheet [data-act="close"]').click();
+        await asyncPreview.page.waitForFunction(()=>testDusted.S.worldLoads.size===0);
+        assert.equal(await asyncPreview.page.locator('.d-sheet-wrap').isVisible(),false);
+        assert.doesNotMatch(await asyncPreview.page.locator('.d-sheet').textContent(),/迟到的内容/);
+        await asyncPreview.page.locator('.d-item').click();
+        await asyncPreview.page.locator('.d-sheet [data-act="delete"]').click();
+        await asyncPreview.page.locator('.d-sheet [data-act="go"]').waitFor();
+        await asyncPreview.page.waitForFunction(()=>testDusted.S.worldLoads.size===0);
+        assert.equal(await asyncPreview.page.locator('.d-detail-preview').count(),0);
+        assert.equal(await asyncPreview.page.locator('.d-sheet [data-act="go"]').isVisible(),true);
+        assert.deepEqual(asyncPreview.errors,[]);
+        console.log('PASS: world error retry, empty book and late response after close or switching to confirmation');
+        await asyncPreview.page.close();
     } finally {await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

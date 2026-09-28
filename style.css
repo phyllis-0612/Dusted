@@ -613,6 +613,25 @@ html body #dusted-root .d-kv-v { text-align: right; white-space: pre-line; word-
 
 html body #dusted-root .d-note { font-size: 13px; color: var(--d-muted) !important; line-height: 1.6; }
 
+/* ---------- 详情预览 ---------- */
+
+html body #dusted-root .d-detail-head > div { min-width: 0; overflow-wrap: anywhere; }
+html body #dusted-root .d-detail-preview,
+html body #dusted-root .d-preview-card { min-width: 0; flex: 0 0 auto; }
+html body #dusted-root .d-preview-card { padding-bottom: 12px; gap: 8px; }
+html body #dusted-root .d-preview-title { font-size: 14px; font-weight: 700; overflow-wrap: anywhere; }
+html body #dusted-root .d-preview-content { font-size: 14px; line-height: 1.7; white-space: pre-wrap; overflow-wrap: anywhere; }
+html body #dusted-root .d-preview-link { display: flex; gap: 10px; align-items: center; padding: 8px 0; border-top: 1px solid var(--d-line); }
+html body #dusted-root .d-preview-link > div { min-width: 0; }
+html body #dusted-root .d-preview-link img { width: 36px; height: 50px; border-radius: 6px; object-fit: cover; flex: 0 0 auto; }
+html body #dusted-root .d-preview-entry { display: flex; flex-direction: column; gap: 8px; padding: 12px 0; border-top: 1px solid var(--d-line); }
+html body #dusted-root .d-preview-entry-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+html body #dusted-root .d-preview-entry-head .d-tag { flex-shrink: 0; }
+html body #dusted-root .d-preview-more summary { cursor: pointer; color: var(--d-accent) !important; font-size: 13px; padding: 4px 0; }
+html body #dusted-root .d-preview-more[open] .d-preview-content { padding-top: 8px; }
+html body #dusted-root .d-preview-next { align-self: flex-start; color: var(--d-accent) !important; }
+html body #dusted-root .d-preview-card .d-note { overflow-wrap: anywhere; }
+
 html body #dusted-root .d-switch-row {
     display: flex;
     align-items: center;
